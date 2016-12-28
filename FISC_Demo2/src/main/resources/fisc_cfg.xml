@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<comment>FiscConnCfg</comment>
+	<entry key="SendAddr">127.0.0.1</entry>
+	<entry key="SendPort">10004</entry>
+	<entry key="RcvAddr">127.0.0.1</entry>
+	<entry key="RcvPort">10003</entry>
+</properties>
