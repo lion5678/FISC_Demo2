@@ -1,4 +1,4 @@
-package com.fisc.demo;
+package com.fisc.socket;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -13,6 +13,8 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketServer;
+
+import com.fisc.process.CallProcess;
 
 public class Fisc_Server_Rcv extends Thread{
 
@@ -56,35 +58,38 @@ public class Fisc_Server_Rcv extends Thread{
 //				byte[] c = new byte[4];
 //				dis.read(c);
 //				log.debug("dataLen: "+dataLen);
-				byte[] b = new byte[8];
-				StringBuffer data = new StringBuffer();
+				int buf = 8;
+				byte[] b = new byte[buf];
 				int len;
 				int dataLen = 0 ;
+				byte[] dataBytes = null;
+				int dataPos = 0; 
 				while((len = dis.read(b)) != -1){
 					log.debug("prot: " + portNum +",接收資料");
 					if(dataLen == 0){
-						dataLen = Integer.parseInt(new String(b).substring(0, 4));
-						log.debug(new String(b).substring(0, 4));
-						log.debug("dataLen: "+dataLen);
-						data.append(new String(b, 4, len - 4));
-						log.debug(data);
+						dataLen = Integer.parseInt(new String(Arrays.copyOfRange(b, 0, 4))); //資料總長度
+						dataBytes = new byte[dataLen];
+						System.arraycopy(b, 4, dataBytes, dataPos, len - 4);
+						dataPos += len - 4;
+						log.debug("dataLen: " + dataLen);
+						log.debug(new String(dataBytes));
 					}else{
-						data.append(new String(b, 0, len));
+						System.arraycopy(b, 0, dataBytes, dataPos, len);
+						dataPos += len;
 					}
-//					data.append(new String(b, 0, len));
-					log.debug(dataLen + ", " + data.toString().getBytes().length +","+ data.toString().length());
-					log.debug(data);
+					log.debug(len +","+ dataLen + ", " + dataPos);
+					log.debug(new String(dataBytes));
 //					log.debug(javax.xml.bind.DatatypeConverter.printHexBinary(b));
-					if(dataLen == data.toString().length()){
+					if(dataLen == dataPos){
 						log.debug("CallProcess");
-						CallProcess.process(data.toString());
-						data.setLength(0);
-						dataLen = 0 ;
-						continue;
+						dataLen = 0;
+						dataPos = 0;
+						CallProcess.process(dataBytes);
+//						continue;
 					}
 				}
 				dis.close();
-				log.debug(data);
+				log.debug("dis.close");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

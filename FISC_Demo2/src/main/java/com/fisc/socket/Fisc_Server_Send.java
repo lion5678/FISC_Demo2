@@ -1,4 +1,4 @@
-package com.fisc.demo;
+package com.fisc.socket;
 
 import java.io.DataInputStream;
 import java.io.FileNotFoundException;
