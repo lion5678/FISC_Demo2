@@ -20,8 +20,9 @@ public class Fisc_Server_Send extends Thread{
 	private int portNum;
 	private String addr;
 	ServerSocket server;
-	Socket conn = null;
-			
+	private static Socket conn;
+	private static DataOutputStream dos;
+	
 	public Fisc_Server_Send() {
 		Properties cfg = new Properties();
 		try {
@@ -53,7 +54,7 @@ public class Fisc_Server_Send extends Thread{
 			while (true) {
 				conn = server.accept();
 				log.debug(conn.getRemoteSocketAddress().toString()+" 已連線...");
-				
+				dos = new DataOutputStream(conn.getOutputStream());
 //				while((len = dis.read(b)) != -1){
 //					log.debug(len);
 //					data.append(new String(b, 0, len));
@@ -66,17 +67,10 @@ public class Fisc_Server_Send extends Thread{
 		}
 	}
 
-	public void sendMsg(byte[] msg){
-		DataOutputStream dos = null;
+	public static void sendMsg(byte[] msg){
 		try {
-			dos = new DataOutputStream(conn.getOutputStream());
 			dos.write(msg);
 			dos.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
-			dos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
