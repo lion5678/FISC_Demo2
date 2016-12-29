@@ -8,5 +8,6 @@ public class CallProcess {
 	
 	public static void process(byte[] msgByte){
 		log.debug("get: " + new String(msgByte));
+		
 	}
 }

@@ -1,10 +1,8 @@
 package com.fisc.socket;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
@@ -12,7 +10,6 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.net.SocketServer;
 
 import com.fisc.process.CallProcess;
 
@@ -61,13 +58,19 @@ public class Fisc_Server_Rcv extends Thread{
 				int buf = 8;
 				byte[] b = new byte[buf];
 				int len;
-				int dataLen = 0 ;
+				int dataLen = 0;
 				byte[] dataBytes = null;
-				int dataPos = 0; 
+				int dataPos = 0;
 				while((len = dis.read(b)) != -1){
 					log.debug("prot: " + portNum +",接收資料");
 					if(dataLen == 0){
-						dataLen = Integer.parseInt(new String(Arrays.copyOfRange(b, 0, 4))); //資料總長度
+						try {
+							dataLen = Integer.parseInt(new String(Arrays.copyOfRange(b, 0, 4))); //資料總長度
+						} catch (NumberFormatException e) {
+							e.printStackTrace();
+							log.debug("標頭長度解析失敗，請檢查並重啟...");
+							return;
+						}
 						dataBytes = new byte[dataLen];
 						System.arraycopy(b, 4, dataBytes, dataPos, len - 4);
 						dataPos += len - 4;

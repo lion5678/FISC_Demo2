@@ -1,6 +1,7 @@
 package com.fisc.socket;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +20,8 @@ public class Fisc_Server_Send extends Thread{
 	private int portNum;
 	private String addr;
 	ServerSocket server;
-	
+	Socket conn = null;
+			
 	public Fisc_Server_Send() {
 		Properties cfg = new Properties();
 		try {
@@ -49,23 +51,35 @@ public class Fisc_Server_Send extends Thread{
 			server = new ServerSocket(portNum);
 			log.debug("等待連線中...");
 			while (true) {
-				Socket conn = server.accept();
+				conn = server.accept();
 				log.debug(conn.getRemoteSocketAddress().toString()+" 已連線...");
-				DataInputStream dis = new DataInputStream(conn.getInputStream());
-				byte[] b = new byte[1024];
-				StringBuffer data = new StringBuffer();
-				int len;
-				while((len = dis.read(b)) != -1){
-					log.debug(len);
-					data.append(new String(b, 0, len));
-				}
-				dis.close();
-				log.debug(data);
+				
+//				while((len = dis.read(b)) != -1){
+//					log.debug(len);
+//					data.append(new String(b, 0, len));
+//				}
+				
+//				log.debug("send data:["++"]");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
+	public void sendMsg(byte[] msg){
+		DataOutputStream dos = null;
+		try {
+			dos = new DataOutputStream(conn.getOutputStream());
+			dos.write(msg);
+			dos.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			dos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 }
