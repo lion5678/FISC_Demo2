@@ -17,63 +17,54 @@ import org.apache.log4j.net.SocketServer;
 public class Fisc_Server_Send extends Thread{
 
 	private static Logger log = Logger.getLogger(Fisc_Server_Send.class);
-	private int portNum;
-	private String addr;
+	private int sendPortNum;
+	private String sendAddr;
 	ServerSocket server;
-	private static Socket conn;
-	private static DataOutputStream dos;
+	private Socket conn;
+	private DataOutputStream dos;
 	
 	public Fisc_Server_Send() {
 		Properties cfg = new Properties();
 		try {
 			cfg.loadFromXML(this.getClass().getResourceAsStream("/fisc_cfg.xml"));
-		} catch (InvalidPropertiesFormatException e) {
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 		try {
-			this.portNum = Integer.parseInt(cfg.getProperty("SendPort"));
+			this.sendPortNum = Integer.parseInt(cfg.getProperty("SendPort"));
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		}
-		log.debug("Fisc_Server start...");
-		this.addr = cfg.getProperty("SendAddr");
-		log.debug("addr: " + addr + ", portNum: " + portNum);
+		
+		this.sendAddr = cfg.getProperty("SendAddr");
+		log.debug("addr: " + sendAddr + ", portNum: " + sendPortNum);
 	}
 	
 	@Override
 	public void run() {
 		super.run();
 		try {
-			server = new ServerSocket(portNum);
+			log.debug("Fisc_Server start...");
+			server = new ServerSocket(sendPortNum);
 			log.debug("等待連線中...");
 			while (true) {
 				conn = server.accept();
 				log.debug(conn.getRemoteSocketAddress().toString()+" 已連線...");
-				dos = new DataOutputStream(conn.getOutputStream());
-//				while((len = dis.read(b)) != -1){
-//					log.debug(len);
-//					data.append(new String(b, 0, len));
-//				}
+				
+				while(true){
+					Thread.sleep(5000);
+				}
 				
 //				log.debug("send data:["++"]");
 			}
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static void sendMsg(byte[] msg){
-		try {
-			dos.write(msg);
-			dos.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void sendMsg(){
+		
 	}
 
 }

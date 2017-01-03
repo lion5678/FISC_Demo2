@@ -1,6 +1,7 @@
 package com.fisc.socket;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -18,7 +19,11 @@ public class Fisc_Server_Rcv extends Thread{
 	private static Logger log = Logger.getLogger(Fisc_Server_Rcv.class);
 	private int portNum;
 	private String addr;
-	ServerSocket server;
+//	private ServerSocket server;
+	
+	private int sendPortNum;
+	private String sendAddr;
+	
 	
 	public Fisc_Server_Rcv() {
 		Properties cfg = new Properties();
@@ -34,24 +39,37 @@ public class Fisc_Server_Rcv extends Thread{
 		
 		try {
 			this.portNum = Integer.parseInt(cfg.getProperty("RcvPort"));
+			this.sendPortNum = Integer.parseInt(cfg.getProperty("SendPort"));
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		}
-		log.debug("Fisc_Server start...");
 		this.addr = cfg.getProperty("RcvAddr");
 		log.debug("addr: " + addr + ", portNum: " + portNum);
+		this.sendAddr = cfg.getProperty("SendAddr");
+		log.debug("addr: " + sendAddr + ", portNum: " + sendPortNum);
 	}
 	
+	@SuppressWarnings("resource")
 	@Override
 	public void run() {
 		super.run();
+//		new Fisc_Server_Send().start();
 		try {
-			server = new ServerSocket(portNum);
-			log.debug("等待連線中...");
+			log.debug("Fisc_Server start...");
+			ServerSocket serverRcv = new ServerSocket(portNum);
+			log.debug(portNum+" 等待連線中...");
+			
+			ServerSocket serverSend = new ServerSocket(sendPortNum);
+			log.debug(sendPortNum+" 等待連線中...");
+			
 			while (true) {
-				Socket conn = server.accept();
-				log.debug(conn.getRemoteSocketAddress().toString()+" 已連線...");
-				DataInputStream dis = new DataInputStream(conn.getInputStream());
+				Socket connRcv = serverRcv.accept();
+				log.debug(connRcv.getRemoteSocketAddress().toString()+" 已連線...");
+				
+				Socket connSend = serverSend.accept();
+				log.debug(connSend.getRemoteSocketAddress().toString()+" 已連線...");
+				
+				DataInputStream dis = new DataInputStream(connRcv.getInputStream());
 //				byte[] c = new byte[4];
 //				dis.read(c);
 //				log.debug("dataLen: "+dataLen);
@@ -87,7 +105,7 @@ public class Fisc_Server_Rcv extends Thread{
 						log.debug("CallProcess");
 						dataLen = 0;
 						dataPos = 0;
-						CallProcess.process(dataBytes);
+						CallProcess.process(connSend, dataBytes);
 //						continue;
 					}
 				}
@@ -99,5 +117,14 @@ public class Fisc_Server_Rcv extends Thread{
 		}
 	}
 
+	public static void sendMsg(Socket connSend, byte[] msg){
+		try {
+			DataOutputStream dos = new DataOutputStream(connSend.getOutputStream());
+			dos.write(msg);
+			dos.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 }
